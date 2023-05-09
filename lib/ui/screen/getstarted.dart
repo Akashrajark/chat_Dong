@@ -1,4 +1,4 @@
-import 'package:chat_app/ui/screen/login_screen.dart';
+import 'package:chat_app/ui/screen/signin_screen.dart';
 import 'package:chat_app/ui/screen/widget/custom_button.dart';
 import 'package:chat_app/value/color.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +50,7 @@ class GetStarted extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LogInScreen(),
+                        builder: (context) => const SignInScreen(),
                       ),
                     );
                   },

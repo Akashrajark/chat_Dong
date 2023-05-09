@@ -5,6 +5,7 @@ import '../../../value/color.dart';
 enum ButtonType { primary, secondary }
 
 class CustomButton extends StatelessWidget {
+  final bool isLoading;
   final ButtonType buttonType;
   final String text;
   final Function() onTap;
@@ -13,6 +14,7 @@ class CustomButton extends StatelessWidget {
     this.buttonType = ButtonType.primary,
     required this.text,
     required this.onTap,
+    this.isLoading = false,
   });
 
   @override
@@ -27,13 +29,15 @@ class CustomButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(27),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 17),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Colors.black,
+            child: isLoading
+                ? LinearProgressIndicator()
+                : Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                          color: Colors.black,
+                        ),
                   ),
-            ),
           ),
         ),
       ),

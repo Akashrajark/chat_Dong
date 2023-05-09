@@ -1,14 +1,15 @@
+import 'package:chat_app/ui/screen/home_screen.dart';
 import 'package:chat_app/ui/screen/signup_screen.dart';
 import 'package:chat_app/ui/screen/widget/custom_button.dart';
 import 'package:flutter/material.dart';
 
-class LogInScreen extends StatefulWidget {
-  const LogInScreen({super.key});
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
   @override
-  State<LogInScreen> createState() => _LogInScreenState();
+  State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _LogInScreenState extends State<LogInScreen> {
+class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -52,7 +53,7 @@ class _LogInScreenState extends State<LogInScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            'Sign Up',
+                            'Sign In',
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineSmall!
@@ -85,7 +86,16 @@ class _LogInScreenState extends State<LogInScreen> {
                             ),
                           ),
                           const SizedBox(height: 20),
-                          CustomButton(text: "Sign Up", onTap: () {}),
+                          CustomButton(
+                              text: "Sign In",
+                              onTap: () {
+                                Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const HomeScreen(),
+                                    ),
+                                    (route) => false);
+                              }),
                           const SizedBox(height: 20),
                           Text(
                             "Don't have an Account?",
@@ -98,7 +108,8 @@ class _LogInScreenState extends State<LogInScreen> {
                           ),
                           const SizedBox(height: 20),
                           CustomButton(
-                            text: "Register",
+                            buttonType: ButtonType.secondary,
+                            text: "Sign up",
                             onTap: () {
                               Navigator.push(
                                 context,
