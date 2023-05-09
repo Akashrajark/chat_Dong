@@ -1,6 +1,4 @@
-import 'package:chat_app/ui/screen/getstarted.dart';
-import 'package:chat_app/ui/screen/home_screen.dart';
-import 'package:chat_app/ui/screen/signup_screen.dart';
+import 'package:chat_app/ui/screen/signin_screen.dart';
 import 'package:chat_app/value/color.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +27,7 @@ void main() async {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: const SignUpScreen(),
+      home: const SignInScreen(),
     ),
   );
 }
