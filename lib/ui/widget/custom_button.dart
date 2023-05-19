@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../value/color.dart';
+import '../../value/color.dart';
 
 enum ButtonType { primary, secondary }
 

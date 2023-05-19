@@ -1,4 +1,4 @@
-import 'package:chat_app/ui/screen/signin_screen.dart';
+import 'package:chat_app/ui/screen/getstarted.dart';
 import 'package:chat_app/value/color.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +13,15 @@ void main() async {
   runApp(
     MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.red,
         inputDecorationTheme: InputDecorationTheme(
           enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide.none,
             borderRadius: BorderRadius.circular(30),
           ),
           filled: true,
           fillColor: primaryColor,
+          suffixIconColor: obscureColor,
+          prefixIconColor: obscureColor,
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: BorderRadius.circular(30),
@@ -27,7 +29,7 @@ void main() async {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: const SignInScreen(),
+      home: const GetStarted(),
     ),
   );
 }

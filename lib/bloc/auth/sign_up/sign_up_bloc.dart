@@ -20,11 +20,12 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
           await FirebaseFirestore.instance.collection("Users").add(
             {
               "name": event.name,
+              "uid": user.user!.uid,
             },
           );
         }
         emit(SignUpSuccessState());
-      } on FirebaseException catch (e, s) {
+      } on FirebaseAuthException catch (e, s) {
         Logger().wtf("$e\n$s");
         if (e.message == "422") {
           emit(

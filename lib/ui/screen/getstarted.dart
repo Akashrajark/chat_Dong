@@ -1,10 +1,32 @@
+import 'package:chat_app/ui/screen/home_screen.dart';
 import 'package:chat_app/ui/screen/signin_screen.dart';
-import 'package:chat_app/ui/screen/widget/custom_button.dart';
+import 'package:chat_app/ui/widget/custom_button.dart';
 import 'package:chat_app/value/color.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class GetStarted extends StatelessWidget {
+class GetStarted extends StatefulWidget {
   const GetStarted({super.key});
+
+  @override
+  State<GetStarted> createState() => _GetStartedState();
+}
+
+class _GetStartedState extends State<GetStarted> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (FirebaseAuth.instance.currentUser != null) {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
+            ),
+            (route) => false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

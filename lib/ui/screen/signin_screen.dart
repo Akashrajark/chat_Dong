@@ -1,9 +1,11 @@
 import 'package:chat_app/bloc/auth/sign_in/sign_in_bloc.dart';
 import 'package:chat_app/ui/screen/home_screen.dart';
 import 'package:chat_app/ui/screen/signup_screen.dart';
-import 'package:chat_app/ui/screen/widget/custom_button.dart';
+import 'package:chat_app/ui/widget/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../widget/custom_alert_dialog.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -14,9 +16,8 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  bool isObsecur = true;
   @override
   void dispose() {
     _emailController.dispose();
@@ -116,9 +117,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                     return null;
                                   },
                                   controller: _passwordController,
-                                  obscureText: true,
-                                  decoration: const InputDecoration(
-                                    prefixIcon: Icon(Icons.lock),
+                                  obscureText: isObsecur,
+                                  decoration: InputDecoration(
+                                    suffixIcon: IconButton(
+                                      onPressed: () {
+                                        setState(() {});
+                                        isObsecur = !isObsecur;
+                                      },
+                                      icon: Icon(
+                                        isObsecur
+                                            ? Icons.visibility
+                                            : Icons.visibility_off,
+                                      ),
+                                    ),
+                                    prefixIcon: const Icon(Icons.lock),
                                     hintText: 'Password',
                                   ),
                                 ),
