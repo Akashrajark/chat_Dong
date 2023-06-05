@@ -2,14 +2,12 @@ import 'package:chat_app/value/color.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String reciverid, name;
+  final String chatbox;
   const ChatScreen({
     super.key,
-    required this.reciverid,
-    required this.name,
+    required this.chatbox,
   });
 
   @override
@@ -37,31 +35,49 @@ class _ChatScreenState extends State<ChatScreen> {
             topRight: Radius.circular(30),
           ),
           child: StreamBuilder(
-            stream: FirebaseFirestore.instance.collection("Users").snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection("chatbox")
+                .doc(widget.chatbox)
+                .collection("chat")
+                .snapshots(),
             builder: (context, snapshot) {
-              Logger().wtf("$snapshot");
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
-              } else if (snapshot.connectionState == ConnectionState.active &&
-                  snapshot.data != null) {
-                final List<QueryDocumentSnapshot<Map<String, dynamic>>> item =
-                    snapshot.data!.docs;
-                return ListView.separated(
-                  reverse: true,
-                  itemBuilder: (context, index) => Customchat(
-                    messageText: item[index].data()["message"],
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    color: primaryColor,
-                  ),
-                  separatorBuilder: (context, index) => Divider(),
-                  itemCount: item.length,
-                );
+              } else if (snapshot.connectionState == ConnectionState.active ||
+                  snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.data != null) {
+                  final List<QueryDocumentSnapshot<Map<String, dynamic>>> item =
+                      snapshot.data!.docs;
+                  return ListView.separated(
+                    padding:
+                        const EdgeInsets.only(bottom: 100, right: 10, left: 10),
+                    reverse: true,
+                    itemBuilder: (context, index) => item[index].data()["id"] ==
+                            FirebaseAuth.instance.currentUser!.uid
+                        ? Customchat(
+                            messageText: item[index].data()["message"],
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            color: Colors.grey.withOpacity(0.17),
+                          )
+                        : Customchat(
+                            messageText: item[index].data()["message"],
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            color: primaryColor,
+                          ),
+                    separatorBuilder: (context, index) => const SizedBox(
+                      height: 5,
+                    ),
+                    itemCount: item.length,
+                  );
+                } else {
+                  return const Center(child: Text("NO Data"));
+                }
               } else if (snapshot.hasError) {
                 return const Center(child: Text("Error"));
               } else {
-                return const Center(child: Text("sajndnknjsdk"));
+                return const Center(child: Text("someting went wrong "));
               }
             },
           ),
@@ -97,13 +113,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(100),
                   onTap: () {
-                    FirebaseFirestore.instance.collection("message").add({
+                    FirebaseFirestore.instance
+                        .collection("chatbox")
+                        .doc(widget.chatbox)
+                        .collection("chat")
+                        .add({
                       "message": messageC.text,
                       "time": DateTime.now(),
-                      "id": [
-                        widget.reciverid,
-                        FirebaseAuth.instance.currentUser!.uid
-                      ]
+                      "id": FirebaseAuth.instance.currentUser!.uid
                     });
                     messageC.clear();
                   },
@@ -161,7 +178,10 @@ class Customchat extends StatelessWidget {
           color: color,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(messageText),
+            child: Text(
+              messageText,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ),
         ),
       ],

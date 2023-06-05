@@ -5,7 +5,6 @@ import 'package:chat_app/value/color.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
@@ -15,7 +14,12 @@ class MessageScreen extends StatefulWidget {
 }
 
 class _MessageScreenState extends State<MessageScreen> {
+  List<dynamic> ids = [];
   final FirebaseFirestore db = FirebaseFirestore.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final customStream = FirebaseFirestore.instance.collection("chatbox").where(
+      "id",
+      arrayContainsAny: [FirebaseAuth.instance.currentUser!.uid]).snapshots();
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -100,12 +104,8 @@ class _MessageScreenState extends State<MessageScreen> {
                             onTap: () {
                               showDialog(
                                 context: context,
-                                builder: (context) => Dialog(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [TextFormField()],
-                                  ),
-                                ),
+                                builder: (context) => CustomDialogbox(
+                                    db: db, auth: auth, ids: ids),
                               );
                             },
                             borderRadius: BorderRadius.circular(20),
@@ -125,13 +125,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       height: 20,
                     ),
                     StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection("Users")
-                          .where("uid",
-                              isNotEqualTo:
-                                  FirebaseAuth.instance.currentUser!.uid)
-                          .get()
-                          .asStream(),
+                      stream: customStream,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                                 ConnectionState.active ||
@@ -140,19 +134,21 @@ class _MessageScreenState extends State<MessageScreen> {
                             return Expanded(
                               child: ListView.separated(
                                 itemBuilder: (context, index) {
-                                  List<
-                                          QueryDocumentSnapshot<
-                                              Map<String, dynamic>>> item =
-                                      snapshot.data!.docs;
-                                  return CustomListTile(
-                                    title: item[index]["name"],
+                                  List<dynamic> newids = snapshot
+                                      .data!.docs[index]["id"] as List<dynamic>;
+
+                                  ids.addAll(newids);
+                                  newids.remove(auth.currentUser!.uid);
+
+                                  return CustomListTile2(
+                                    otherid: newids.first,
                                     onTap: () {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ChatScreen(
-                                            reciverid: item[index]["uid"],
-                                            name: item[index]["name"],
+                                            chatbox: snapshot
+                                                .data!.docs[index].reference.id,
                                           ),
                                         ),
                                       );
@@ -166,13 +162,14 @@ class _MessageScreenState extends State<MessageScreen> {
                             );
                           } else {
                             return Center(
-                                child: Text(
-                              "no Data",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(color: Colors.black),
-                            ));
+                              child: Text(
+                                "No Data",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(color: Colors.black),
+                              ),
+                            );
                           }
                         }
 
@@ -194,6 +191,148 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class CustomDialogbox extends StatelessWidget {
+  final FirebaseFirestore db;
+  final FirebaseAuth auth;
+  final List? ids;
+  const CustomDialogbox({
+    super.key,
+    required this.db,
+    required this.auth,
+    required this.ids,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height / 5,
+      child: Dialog(
+        insetPadding: const EdgeInsets.all(0),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                      "Search",
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              TextFormField(
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.all(1),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  filled: true,
+                  fillColor: primaryColor,
+                  suffixIcon: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.search,
+                    ),
+                  ),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+              StreamBuilder(
+                stream: db
+                    .collection("Users")
+                    .where(
+                      "uid",
+                      isNotEqualTo: auth.currentUser!.uid,
+                    )
+                    .get()
+                    .asStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.active ||
+                      snapshot.connectionState == ConnectionState.done) {
+                    if (snapshot.data!.docs.isNotEmpty) {
+                      return Expanded(
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(10.0),
+                          itemBuilder: (context, index) {
+                            List<QueryDocumentSnapshot<Map<String, dynamic>>>
+                                item = snapshot.data!.docs;
+
+                            if (ids == null ||
+                                !ids!.contains(item[index]["uid"])) {
+                              return CustomListTile(
+                                title: item[index]["name"],
+                                onTap: () {
+                                  db.collection("chatbox").add(
+                                    {
+                                      "id": [
+                                        item[index]["uid"],
+                                        auth.currentUser!.uid
+                                      ],
+                                      "time": DateTime.now(),
+                                    },
+                                  );
+                                  Navigator.pop(context);
+                                },
+                              );
+                            } else {
+                              return const SizedBox();
+                            }
+                          },
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(),
+                          itemCount: snapshot.data!.docs.length,
+                        ),
+                      );
+                    } else {
+                      return Center(
+                        child: Text(
+                          "No Data",
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge!
+                              .copyWith(color: Colors.black),
+                        ),
+                      );
+                    }
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const LinearProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return const CustomAlertDialog(
+                        title: "Something went wrong", message: "");
+                  }
+                  return const SizedBox();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
