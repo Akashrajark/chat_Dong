@@ -42,5 +42,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         emit(SignInFailureState());
       }
     });
+    on<EditProfileEvent>((event, emit) async {
+      emit(SignInLoadingState());
+
+      try {
+        emit(SignInSuccessState());
+      } catch (e, s) {
+        Logger().wtf("$e\n$s");
+        emit(SignInFailureState());
+      }
+    });
   }
 }
