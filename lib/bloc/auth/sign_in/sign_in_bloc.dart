@@ -16,6 +16,7 @@ class SignInBloc extends Bloc<SignInEvent, SignInState> {
           email: event.email,
           password: event.password,
         );
+
         emit(SignInSuccessState());
       } catch (e, s) {
         Logger().wtf("$e\n$s");

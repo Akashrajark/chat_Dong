@@ -4,10 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
+  final String otherid;
   final String chatbox;
   const ChatScreen({
     super.key,
     required this.chatbox,
+    required this.otherid,
   });
 
   @override
@@ -24,6 +26,17 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         toolbarHeight: 80,
+        title: ClipRRect(
+          borderRadius: BorderRadius.circular(100),
+          child: Material(
+            color: primaryColor,
+            child: Image.network(
+              "https://marketplace.canva.com/EAFEits4-uw/1/0/400w/canva-boy-cartoon-gamer-animated-twitch-profile-photo-Pk-dGK9pdQg.jpg",
+              height: 50,
+              width: 50,
+            ),
+          ),
+        ),
       ),
       body: SizedBox(
         width: MediaQuery.of(context).size.width,
@@ -39,6 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 .collection("chatbox")
                 .doc(widget.chatbox)
                 .collection("chat")
+                .orderBy("time", descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -54,18 +68,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding:
                         const EdgeInsets.only(bottom: 100, right: 10, left: 10),
                     reverse: true,
-                    itemBuilder: (context, index) => item[index].data()["id"] ==
-                            FirebaseAuth.instance.currentUser!.uid
-                        ? Customchat(
-                            messageText: item[index].data()["message"],
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            color: Colors.grey.withOpacity(0.17),
-                          )
-                        : Customchat(
-                            messageText: item[index].data()["message"],
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            color: primaryColor,
-                          ),
+                    itemBuilder: (context, index) => Customchat(
+                      messageText: item[index].data()["message"],
+                      isActiveUser: item[index].data()["id"] ==
+                          FirebaseAuth.instance.currentUser!.uid,
+                      time: item[index].data()["time"],
+                    ),
                     separatorBuilder: (context, index) => const SizedBox(
                       height: 5,
                     ),
@@ -113,15 +121,17 @@ class _ChatScreenState extends State<ChatScreen> {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(100),
                   onTap: () {
-                    FirebaseFirestore.instance
-                        .collection("chatbox")
-                        .doc(widget.chatbox)
-                        .collection("chat")
-                        .add({
-                      "message": messageC.text,
-                      "time": DateTime.now(),
-                      "id": FirebaseAuth.instance.currentUser!.uid
-                    });
+                    if (messageC.text.trim() != "") {
+                      FirebaseFirestore.instance
+                          .collection("chatbox")
+                          .doc(widget.chatbox)
+                          .collection("chat")
+                          .add({
+                        "message": messageC.text,
+                        "time": DateTime.now(),
+                        "id": FirebaseAuth.instance.currentUser!.uid
+                      });
+                    }
                     messageC.clear();
                   },
                   child: const Padding(
@@ -157,31 +167,44 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class Customchat extends StatelessWidget {
-  final MainAxisAlignment mainAxisAlignment;
   final String messageText;
-  final Color color;
+  final Timestamp time;
+  final bool isActiveUser;
   const Customchat({
     super.key,
     required this.messageText,
-    required this.mainAxisAlignment,
-    required this.color,
+    required this.time,
+    required this.isActiveUser,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: mainAxisAlignment,
-      mainAxisSize: MainAxisSize.min,
+    return Column(
+      crossAxisAlignment:
+          isActiveUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Material(
-          borderRadius: BorderRadius.circular(10),
-          color: color,
+          borderRadius: BorderRadius.circular(30),
+          color: isActiveUser ? Colors.grey.withOpacity(0.17) : primaryColor,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(18.0),
             child: Text(
               messageText,
-              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: isActiveUser ? TextAlign.end : TextAlign.start,
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.normal,
+                  ),
             ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 5,
+          ),
+          child: Text(
+            "${time.toDate().hour}:${time.toDate().minute}",
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ),
       ],

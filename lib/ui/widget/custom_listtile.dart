@@ -66,8 +66,10 @@ class CustomListTile2 extends StatelessWidget {
           }
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox();
         } else {
-          return const Center(child: LinearProgressIndicator());
+          return const Text("No Data");
         }
       },
     );

@@ -12,6 +12,5 @@ class SignUpSuccessState extends SignUpState {}
 class SignUpFailureState extends SignUpState {
   final String message;
 
-  SignUpFailureState(
-      {this.message = 'Please check your internet connection and try again.'});
+  SignUpFailureState({this.message = 'user already exist'});
 }

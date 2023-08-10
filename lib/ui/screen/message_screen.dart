@@ -63,7 +63,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           size: 50,
                         ),
                       ),
-                    )
+                    ),
                   ],
                 )
               ],
@@ -147,6 +147,7 @@ class _MessageScreenState extends State<MessageScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ChatScreen(
+                                            otherid: newids.first,
                                             chatbox: snapshot
                                                 .data!.docs[index].reference.id,
                                           ),
@@ -172,7 +173,6 @@ class _MessageScreenState extends State<MessageScreen> {
                             );
                           }
                         }
-
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return const LinearProgressIndicator();
